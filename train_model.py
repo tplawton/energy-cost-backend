@@ -1,40 +1,35 @@
 import pandas as pd
 import numpy as np
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import joblib
 import os
 
-# Load dataset
+# Load the dataset
 df = pd.read_csv("data/raw/recs2020.csv")
 
-# Define features
+# Select fewer, user-known features
 selected_features = [
-    'state_postal', 'BA_climate', 'IECC_climate_code',
-    'TYPEHUQ', 'YEARMADERANGE', 'BEDROOMS', 'NCOMBATH', 'NHAFBATH',
-    'OTHROOMS', 'TOTROOMS', 'TOTSQFT_EN', 'STORIES',
-    'NHSLDMEM', 'FUELHEAT', 'NUMFRIG', 'NUMFREEZ',
-    'WALLTYPE', 'OVEN'
+    'state_postal', 'BA_climate', 'BEDROOMS',
+    'TOTROOMS', 'TOTSQFT_EN', 'NHSLDMEM', 'FUELHEAT'
 ]
 
-# Prepare features and target
-features_df = df[selected_features + ['KWH']].copy()
-X = features_df.drop(columns=['KWH'])
-y = features_df['KWH']
+# Ensure the features and target are clean
+df = df[selected_features + ['KWH']].dropna()
 
-# One-hot encode categorical features
-categorical_cols = [
-    'state_postal', 'BA_climate', 'IECC_climate_code',
-    'TYPEHUQ', 'YEARMADERANGE', 'FUELHEAT', 'WALLTYPE', 'OVEN'
-]
+X = df[selected_features]
+y = df['KWH']
+
+# One-hot encode categorical variables
+categorical_cols = ['state_postal', 'BA_climate', 'FUELHEAT']
 X_encoded = pd.get_dummies(X, columns=categorical_cols, drop_first=True)
 
 # Train/test split
 X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
 
-# Train model
-model = RandomForestRegressor(n_estimators=100, random_state=42)
+# Train a simple Linear Regression model
+model = LinearRegression()
 model.fit(X_train, y_train)
 
 # Evaluate

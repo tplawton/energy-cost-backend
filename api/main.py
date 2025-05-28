@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
 import pandas as pd
+from fastapi.middleware.cors import CORSMiddleware
 
 # Load model and feature names
 model = joblib.load("models/rf_model.pkl")
@@ -28,6 +29,15 @@ class EnergyInput(BaseModel):
     OVEN: str
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post("/predict")
 def predict_energy(data: EnergyInput):
